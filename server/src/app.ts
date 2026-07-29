@@ -26,6 +26,8 @@ export function createApp(mongoUrl = env.mongodbUri) {
     helmet({
       contentSecurityPolicy: false,
       crossOriginEmbedderPolicy: false,
+      // Allow browser clients on a different origin (Vercel) to read API responses.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
 
@@ -38,15 +40,35 @@ export function createApp(mongoUrl = env.mongodbUri) {
     cors({
       origin(origin, callback) {
         // Same-origin / non-browser clients may omit Origin.
-        if (!origin || env.clientOrigins.includes(origin)) {
+        if (!origin) {
           callback(null, true);
           return;
         }
-        callback(null, false);
+        const normalized = origin.replace(/\/$/, '');
+        if (env.clientOrigins.includes(normalized)) {
+          callback(null, true);
+          return;
+        }
+        callback(new Error(`CORS blocked for origin: ${origin}`), false);
       },
       credentials: true,
     }),
   );
+
+  // Ensure failed CORS still returns a clear response (cors error handler).
+  app.use((err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err instanceof Error && err.message.startsWith('CORS blocked')) {
+      res.status(403).json({
+        error: {
+          code: 'CORS',
+          message:
+            'Origin not allowed. Set CLIENT_ORIGIN on the API to your frontend URL (e.g. https://nursehandover.online).',
+        },
+      });
+      return;
+    }
+    next(err);
+  });
 
   app.use(express.json({ limit: '512kb' }));
   app.use(express.urlencoded({ extended: false, limit: '512kb' }));

@@ -35,11 +35,12 @@ function required(name: string, fallback?: string): string {
 }
 
 function collectClientOrigins(): string[] {
+  const raw = process.env.CLIENT_ORIGIN?.trim() || 'http://localhost:5173';
   return [
     ...new Set(
-      required('CLIENT_ORIGIN', 'http://localhost:5173')
+      raw
         .split(',')
-        .map((s) => s.trim())
+        .map((s) => s.trim().replace(/\/$/, ''))
         .filter(Boolean),
     ),
   ];
