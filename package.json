@@ -1,0 +1,36 @@
+{
+  "name": "bedsiderelay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BedsideRelay - Clinical Shift Handover",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail false -n server,client -c teal,blue \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build": "npm run build -w shared && npm run build -w server && npm run build -w client",
+    "start": "npm run start -w server",
+    "test": "npm run test -w shared && npm run test -w server && npm run test -w client",
+    "test:e2e": "npm run test:e2e -w client",
+    "lint": "eslint client/src server/src shared/src --max-warnings=100",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w server && npm run typecheck -w client",
+    "seed": "npm run seed -w server",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module"
+}

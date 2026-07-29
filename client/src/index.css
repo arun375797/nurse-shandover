@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased text-navy-900 bg-slate-50;
+  }
+
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-teal-600;
+  }
+
+  body {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white;
+  }
+
+  .card-elevated {
+    @apply card shadow-card;
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8;
+  }
+
+  .page-title {
+    @apply font-display text-2xl font-bold text-navy-900 sm:text-3xl;
+  }
+
+  .page-subtitle {
+    @apply mt-1 text-sm text-slate-600 sm:text-base;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 min-h-11;
+  }
+
+  .btn-primary {
+    @apply btn bg-teal-600 text-white hover:bg-teal-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-navy-800 border border-slate-300 hover:bg-slate-50;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-700 text-white hover:bg-red-800;
+  }
+
+  .field-label {
+    @apply block text-sm font-semibold text-navy-800 mb-1;
+  }
+
+  .field-input {
+    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-base text-navy-900 shadow-sm min-h-11;
+  }
+
+  .field-error {
+    @apply mt-1 text-sm text-red-700;
+  }
+}
