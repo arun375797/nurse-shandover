@@ -34,6 +34,17 @@ function required(name: string, fallback?: string): string {
   return value;
 }
 
+function collectClientOrigins(): string[] {
+  return [
+    ...new Set(
+      required('CLIENT_ORIGIN', 'http://localhost:5173')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
+
 export const env = {
   get nodeEnv() {
     return process.env.NODE_ENV ?? 'development';
@@ -51,13 +62,26 @@ export const env = {
     );
   },
   get clientOrigin() {
-    return required('CLIENT_ORIGIN', 'http://localhost:5173');
+    return collectClientOrigins()[0]!;
+  },
+  get clientOrigins() {
+    return collectClientOrigins();
   },
   get appTimezone() {
     return process.env.APP_TIMEZONE ?? 'Asia/Kolkata';
   },
   get cookieName() {
     return process.env.COOKIE_NAME ?? 'br.sid';
+  },
+  /** Use `none` when frontend and API are on different sites (requires Secure + HTTPS). */
+  get cookieSameSite(): 'lax' | 'strict' | 'none' {
+    const raw = (process.env.COOKIE_SAMESITE ?? 'lax').toLowerCase();
+    if (raw === 'none' || raw === 'strict' || raw === 'lax') return raw;
+    return 'lax';
+  },
+  get cookieSecure() {
+    if (this.cookieSameSite === 'none') return true;
+    return this.isProd;
   },
   get sessionMaxAgeMs() {
     return Number(process.env.SESSION_MAX_AGE_MS ?? 8 * 60 * 60 * 1000);

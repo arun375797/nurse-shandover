@@ -9,8 +9,8 @@ const { generateToken, doubleCsrfProtection } = doubleCsrf({
   cookieName: 'br.csrf',
   cookieOptions: {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: env.isProd,
+    sameSite: env.cookieSameSite,
+    secure: env.cookieSecure,
     path: '/',
   },
   getTokenFromRequest: (req) => {

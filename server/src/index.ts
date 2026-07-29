@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
+import { connectMongo } from './db.js';
 import { safeLog } from './utils/safeLog.js';
 
 process.on('unhandledRejection', (reason) => {
@@ -18,7 +19,7 @@ async function main() {
     throw new Error('SESSION_SECRET must be at least 32 characters in production.');
   }
 
-  await mongoose.connect(env.mongodbUri);
+  await connectMongo();
   mongoose.connection.on('error', (err) => {
     safeLog.error('MongoDB connection error');
     console.error(err.name);

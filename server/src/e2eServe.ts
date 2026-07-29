@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { createApp } from './app.js';
 import { Unit } from './models/Unit.js';
 import { User } from './models/User.js';

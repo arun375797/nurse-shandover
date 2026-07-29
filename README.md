@@ -56,6 +56,58 @@ npm run dev
 
 Never use real patient information in development, tests, seed data, or documentation.
 
+## Deploy separately (frontend + backend)
+
+| Part | Host | Notes |
+|------|------|--------|
+| Frontend (`client`) | **Vercel** | Static Vite build |
+| Backend (`server`) | **Render**, Railway, Fly.io, etc. | Long-running Node + Express |
+
+Local development is unchanged: Vite proxies `/api` → `localhost:4000`, so leave `VITE_API_URL` empty and `COOKIE_SAMESITE=lax`.
+
+### 1. Backend (e.g. Render)
+
+1. Create a **Web Service** from this repo (or use `render.yaml`).
+2. Build: `npm install && npm run build -w shared && npm run build -w server`
+3. Start: `npm run start -w server`
+4. Set env vars:
+
+| Variable | Value |
+|----------|--------|
+| `MONGODB_URI` | Atlas connection string |
+| `SESSION_SECRET` | Random string ≥ 32 characters |
+| `CLIENT_ORIGIN` | Exact Vercel origin, e.g. `https://your-app.vercel.app` (no trailing slash; comma-separate multiple) |
+| `NODE_ENV` | `production` |
+| `COOKIE_SAMESITE` | `none` (required for cross-site cookies) |
+| `APP_TIMEZONE` | e.g. `Asia/Kolkata` |
+
+5. In Atlas Network Access, allow the host (or `0.0.0.0/0`).
+6. Seed once against that DB from your machine:
+
+```bash
+npm run build -w shared
+npm run seed
+```
+
+Confirm health: `https://your-api.onrender.com/api/health`
+
+### 2. Frontend (Vercel)
+
+1. Import the same repo in [Vercel](https://vercel.com). Root directory: `.`
+2. Build settings match `vercel.json` (or set Root to repo root):
+   - **Install:** `npm install`
+   - **Build:** `npm run build -w shared && npm run build -w client`
+   - **Output:** `client/dist`
+3. Set env var:
+
+| Variable | Value |
+|----------|--------|
+| `VITE_API_URL` | Backend origin, e.g. `https://your-api.onrender.com` (no trailing slash, no `/api`) |
+
+4. Deploy. Open the Vercel URL and sign in with seed accounts (change passwords before real use).
+
+> Cross-site auth needs HTTPS on both sides and `COOKIE_SAMESITE=none`. Hospital production use still requires [docs/PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md).
+
 ## Root scripts
 
 | Command | Description |
@@ -89,7 +141,7 @@ Important files:
 
 ## Security notes (summary)
 
-- Argon2/bcrypt password hashing (bcrypt)
+- bcryptjs password hashing
 - MongoDB-backed sessions, HttpOnly cookies, CSRF protection
 - Helmet, exact-origin CORS, rate limits, small body limits
 - Unit-scoped patient queries for nurses

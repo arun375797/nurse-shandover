@@ -1,3 +1,11 @@
+/** Backend origin when frontend and API are on different hosts. Empty = same origin / Vite proxy. */
+const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+
+export function apiUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 let csrfToken: string | null = null;
 
 export type ApiErrorBody = {
@@ -23,7 +31,7 @@ export class ApiError extends Error {
 
 export async function ensureCsrf(): Promise<string> {
   if (csrfToken) return csrfToken;
-  const res = await fetch('/api/auth/csrf-token', { credentials: 'include' });
+  const res = await fetch(apiUrl('/api/auth/csrf-token'), { credentials: 'include' });
   if (!res.ok) {
     throw new ApiError(res.status, 'CSRF', 'Unable to obtain security token.');
   }
@@ -40,6 +48,7 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit & { json?: unknown } = {},
 ): Promise<T> {
+  const url = apiUrl(path);
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
 
@@ -57,7 +66,7 @@ export async function apiFetch<T>(
 
   let res: Response;
   try {
-    res = await fetch(path, {
+    res = await fetch(url, {
       ...options,
       method,
       headers,
@@ -90,7 +99,7 @@ export async function apiFetch<T>(
       }
       let retry: Response;
       try {
-        retry = await fetch(path, {
+        retry = await fetch(url, {
           ...options,
           method,
           headers: retryHeaders,

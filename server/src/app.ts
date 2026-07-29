@@ -36,7 +36,14 @@ export function createApp(mongoUrl = env.mongodbUri) {
 
   app.use(
     cors({
-      origin: env.clientOrigin,
+      origin(origin, callback) {
+        // Same-origin / non-browser clients may omit Origin.
+        if (!origin || env.clientOrigins.includes(origin)) {
+          callback(null, true);
+          return;
+        }
+        callback(null, false);
+      },
       credentials: true,
     }),
   );
@@ -75,8 +82,8 @@ export function createApp(mongoUrl = env.mongodbUri) {
           }),
       cookie: {
         httpOnly: true,
-        sameSite: 'lax',
-        secure: env.isProd,
+        sameSite: env.cookieSameSite,
+        secure: env.cookieSecure,
         maxAge: env.sessionMaxAgeMs,
         path: '/',
       },

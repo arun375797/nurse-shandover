@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { loginSchema, registerSchema } from '@bedsiderelay/shared';
 import { User } from '../models/User.js';
 import { Unit } from '../models/Unit.js';
@@ -144,8 +144,13 @@ authRouter.post('/logout', requireAuth, async (req, res, next) => {
     await new Promise<void>((resolve, reject) => {
       req.session.destroy((err) => (err ? reject(err) : resolve()));
     });
-    res.clearCookie(env.cookieName, { path: '/' });
-    res.clearCookie('br.csrf', { path: '/' });
+    const cookieOpts = {
+      path: '/',
+      sameSite: env.cookieSameSite,
+      secure: env.cookieSecure,
+    } as const;
+    res.clearCookie(env.cookieName, cookieOpts);
+    res.clearCookie('br.csrf', cookieOpts);
     res.json({ ok: true });
   } catch (err) {
     next(err);

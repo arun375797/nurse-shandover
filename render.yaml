@@ -1,0 +1,23 @@
+# Optional Render Blueprint for the API only.
+# Frontend stays on Vercel. See README "Deploy separately".
+services:
+  - type: web
+    name: bedsiderelay-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build -w shared && npm run build -w server
+    startCommand: npm run start -w server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: MONGODB_URI
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: APP_TIMEZONE
+        value: Asia/Kolkata

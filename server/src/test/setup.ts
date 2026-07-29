@@ -8,7 +8,7 @@ process.env.MONGODB_URI =
 import { beforeAll, afterAll, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { Unit } from '../models/Unit.js';
 import { User } from '../models/User.js';
 import { PatientHandover } from '../models/PatientHandover.js';

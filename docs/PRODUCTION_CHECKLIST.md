@@ -10,6 +10,7 @@ This checklist is **not** a compliance certification.
 - [ ] Set `NODE_ENV=production`
 - [ ] Serve only over HTTPS; set secure cookies (`secure: true` already when production)
 - [ ] Set `CLIENT_ORIGIN` to the exact browser origin (scheme + host + port, no trailing slash)
+- [ ] If frontend and API are on different domains: set `COOKIE_SAMESITE=none`, serve both over HTTPS, and set `VITE_API_URL` on the frontend build to the API origin
 - [ ] Restrict MongoDB network access; enable auth on the database
 - [ ] Change or disable all seed accounts; never deploy with default seed passwords
 - [ ] Confirm hospital terminology in `shared/src/options.ts` (especially T/TT tube, urine field label)
