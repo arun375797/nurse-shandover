@@ -33,7 +33,15 @@ export async function ensureCsrf(): Promise<string> {
   if (csrfToken) return csrfToken;
   const res = await fetch(apiUrl('/api/auth/csrf-token'), { credentials: 'include' });
   if (!res.ok) {
-    throw new ApiError(res.status, 'CSRF', 'Unable to obtain security token.');
+    const missingApi =
+      !API_BASE && (res.status === 404 || res.status === 405 || res.status === 0);
+    throw new ApiError(
+      res.status,
+      'CSRF',
+      missingApi
+        ? 'API is not configured. Set VITE_API_URL to your backend URL on Vercel and redeploy.'
+        : 'Unable to obtain security token.',
+    );
   }
   const data = (await res.json()) as { csrfToken: string };
   csrfToken = data.csrfToken;
