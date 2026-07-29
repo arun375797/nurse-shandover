@@ -13,6 +13,7 @@
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
     "build": "npm run build -w shared && npm run build -w server && npm run build -w client",
+    "build:web": "npm run build -w shared && npm run build -w client",
     "start": "npm run start -w server",
     "test": "npm run test -w shared && npm run test -w server && npm run test -w client",
     "test:e2e": "npm run test:e2e -w client",

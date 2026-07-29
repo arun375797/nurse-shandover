@@ -93,11 +93,14 @@ Confirm health: `https://your-api.onrender.com/api/health`
 
 ### 2. Frontend (Vercel)
 
-1. Import the same repo in [Vercel](https://vercel.com). Root directory: `.`
-2. Build settings match `vercel.json` (or set Root to repo root):
-   - **Install:** `npm install`
-   - **Build:** `npm run build -w shared && npm run build -w client`
-   - **Output:** `client/dist`
+1. Import the same repo in [Vercel](https://vercel.com).
+2. **Root Directory** — pick one (both work):
+
+| Root Directory | Install / Build / Output |
+|----------------|---------------------------|
+| **empty** (repo root) | uses root `vercel.json` → output `client/dist` |
+| **`client`** | uses `client/vercel.json` → installs from parent monorepo, output `dist` |
+
 3. Set env var:
 
 | Variable | Value |
