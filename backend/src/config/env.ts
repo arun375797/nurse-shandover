@@ -72,21 +72,14 @@ export const env = {
   get cookieName() {
     return process.env.COOKIE_NAME ?? 'br.sid';
   },
-  /** Use `none` when frontend and API are on different sites (requires Secure + HTTPS). */
+  /**
+   * Prefer `lax` when the browser talks to the API on the same site
+   * (Vercel rewrites `/api` → Render). Use `none` only for true cross-site
+   * calls (different registrable domains, no proxy) — Safari/iOS often blocks those.
+   */
   get cookieSameSite(): 'lax' | 'strict' | 'none' {
     const raw = process.env.COOKIE_SAMESITE?.toLowerCase();
     if (raw === 'none' || raw === 'strict' || raw === 'lax') return raw;
-    // Production split hosting (Vercel UI + Render API): default to cross-site cookies.
-    if (this.isProd) {
-      const origin = this.clientOrigin;
-      if (
-        origin.startsWith('https://') &&
-        !origin.includes('localhost') &&
-        !origin.includes('127.0.0.1')
-      ) {
-        return 'none';
-      }
-    }
     return 'lax';
   },
   get cookieSecure() {

@@ -13,7 +13,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: COOKIE_SAMESITE
-        value: none
+        value: lax
       - key: APP_TIMEZONE
         value: Asia/Kolkata
       - key: COOKIE_NAME

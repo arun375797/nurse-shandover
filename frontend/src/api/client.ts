@@ -1,4 +1,4 @@
-/** Backend origin when frontend and API are on different hosts. Empty = same origin / Vite proxy. */
+/** Empty = same origin (Vite proxy locally, Vercel /api rewrite in production). */
 const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
 
 export function apiUrl(path: string): string {
@@ -39,7 +39,7 @@ export async function ensureCsrf(): Promise<string> {
       res.status,
       'CSRF',
       missingApi
-        ? 'API is not configured. Set VITE_API_URL to your backend URL on Vercel and redeploy.'
+        ? 'API is not reachable. Locally run the backend; on Vercel ensure /api is rewritten to Render.'
         : 'Unable to obtain security token.',
     );
   }

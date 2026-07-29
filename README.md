@@ -76,7 +76,9 @@ Full checklist: **[docs/DEPLOY_SPLIT.md](docs/DEPLOY_SPLIT.md)**
 
 | Part | Host | Root directory | Notes |
 |------|------|----------------|--------|
-| Frontend | **Vercel** | `frontend` | Set `VITE_API_URL=https://nurse-shandover.onrender.com` |
-| Backend | **Render** | `backend` | Set `CLIENT_ORIGIN=https://nursehandover.online` and `COOKIE_SAMESITE=none` |
+| Frontend | **Vercel** | `frontend` | Leave `VITE_API_URL` empty (`/api` rewritten to Render) |
+| Backend | **Render** | `backend` | Set `CLIENT_ORIGIN=https://nursehandover.online` and `COOKIE_SAMESITE=lax` |
 
 Local development: leave `VITE_API_URL` empty; Vite proxies `/api` → `localhost:4000`.
+
+> **iPhone / Safari:** do not call the Render URL from the browser. Use the Vercel `/api` rewrite so session cookies stay first-party.

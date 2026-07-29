@@ -10,7 +10,7 @@ This checklist is **not** a compliance certification.
 - [ ] Set `NODE_ENV=production`
 - [ ] Serve only over HTTPS; set secure cookies (`secure: true` already when production)
 - [ ] Set `CLIENT_ORIGIN` to the exact browser origin (scheme + host + port, no trailing slash)
-- [ ] If frontend and API are on different domains: set `COOKIE_SAMESITE=none`, serve both over HTTPS, and set `VITE_API_URL` on the frontend build to the API origin
+- [ ] Prefer same-site API via Vercel `/api` rewrite (leave `VITE_API_URL` empty) and `COOKIE_SAMESITE=lax` so Safari/iOS keeps the session. Only use cross-site `VITE_API_URL` + `COOKIE_SAMESITE=none` if you accept Safari cookie limits.
 - [ ] Restrict MongoDB network access; enable auth on the database
 - [ ] Change or disable all seed accounts; never deploy with default seed passwords
 - [ ] Confirm hospital terminology in `frontend/src/shared/options.ts` and `backend/src/shared/options.ts` (especially T/TT tube, urine field label)
