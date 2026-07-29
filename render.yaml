@@ -1,23 +1,31 @@
-# Optional Render Blueprint for the API only.
-# Frontend stays on Vercel. See README "Deploy separately".
+# Backend only (Render). Frontend is deployed separately on Vercel.
+# In the Render dashboard, set Root Directory to: backend
 services:
   - type: web
-    name: bedsiderelay-api
+    name: nurse-shandover
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build -w shared && npm run build -w server
-    startCommand: npm run start -w server
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: COOKIE_SAMESITE
         value: none
+      - key: APP_TIMEZONE
+        value: Asia/Kolkata
+      - key: COOKIE_NAME
+        value: br.sid
+      # MUST be https (not http) — your Vercel custom domain
+      - key: CLIENT_ORIGIN
+        value: https://nursehandover.online
       - key: MONGODB_URI
         sync: false
       - key: SESSION_SECRET
         generateValue: true
-      - key: CLIENT_ORIGIN
-        sync: false
-      - key: APP_TIMEZONE
-        value: Asia/Kolkata
+      - key: SESSION_MAX_AGE_MS
+        value: "28800000"
+      - key: INACTIVITY_TIMEOUT_MS
+        value: "1800000"

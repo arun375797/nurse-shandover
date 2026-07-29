@@ -8,6 +8,20 @@ This application only stores information entered by authorized staff. It does **
 
 > Production use requires review and approval by hospital clinical leadership, IT, privacy, security, and legal teams under applicable local laws and hospital policy. This project does **not** claim HIPAA, GDPR, certification, or hospital deployment approval.
 
+## Structure
+
+Frontend and backend are **separate** packages (not an npm workspace monorepo):
+
+```
+HandOver/
+  frontend/     → React + Vite  (host on Vercel)
+  backend/      → Express API   (host on Render)
+  docs/
+  docker-compose.yml
+```
+
+Each has its own `package.json` and dependencies. Shared Zod schemas live under each app’s `src/shared/` (copied into both so deploys stay independent).
+
 ## Stack
 
 - React + Vite + TypeScript + Tailwind CSS
@@ -16,7 +30,6 @@ This application only stores information entered by authorized staff. It does **
 - MongoDB + Mongoose
 - Secure cookie sessions (HttpOnly, SameSite)
 - Vitest, React Testing Library, Supertest, Playwright
-- npm workspaces: `client`, `server`, `shared`
 
 ## Prerequisites
 
@@ -27,149 +40,43 @@ This application only stores information entered by authorized staff. It does **
 ## Quick start
 
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Configure environment
-copy .env.example .env
-
-# 3. Start MongoDB (Docker)
+# 1. MongoDB (Docker)
 docker compose up -d
 
-# 4. Build shared package, seed synthetic accounts
-npm run build -w shared
+# 2. Backend
+cd backend
+copy .env.example .env
+npm install
 npm run seed
+npm run dev
 
-# 5. Run API + web app
+# 3. Frontend (new terminal)
+cd frontend
+npm install
 npm run dev
 ```
 
 - Web UI: http://localhost:5173  
 - API: http://localhost:4000/api/health  
 
+Optional: from repo root, `npm install` then `npm run install:all` / `npm run dev` to run both together.
+
 ### Development accounts (synthetic only)
 
-| Role  | Email                         | Password (from `.env`) |
-|-------|-------------------------------|-------------------------|
+| Role  | Email                         | Password (from `backend/.env`) |
+|-------|-------------------------------|--------------------------------|
 | Nurse | `nurse.dev@bedsiderelay.local`  | `SEED_NURSE_PASSWORD` (`NurseDev!234`) |
 | Admin | `admin.dev@bedsiderelay.local`  | `SEED_ADMIN_PASSWORD` (`AdminDev!234`) |
 
 Never use real patient information in development, tests, seed data, or documentation.
 
-## Deploy separately (frontend + backend)
+## Deploy separately (Vercel + Render)
 
-| Part | Host | Notes |
-|------|------|--------|
-| Frontend (`client`) | **Vercel** | Static Vite build |
-| Backend (`server`) | **Render**, Railway, Fly.io, etc. | Long-running Node + Express |
+Full checklist: **[docs/DEPLOY_SPLIT.md](docs/DEPLOY_SPLIT.md)**
 
-Local development is unchanged: Vite proxies `/api` → `localhost:4000`, so leave `VITE_API_URL` empty and `COOKIE_SAMESITE=lax`.
+| Part | Host | Root directory | Notes |
+|------|------|----------------|--------|
+| Frontend | **Vercel** | `frontend` | Set `VITE_API_URL=https://nurse-shandover.onrender.com` |
+| Backend | **Render** | `backend` | Set `CLIENT_ORIGIN=https://nursehandover.online` and `COOKIE_SAMESITE=none` |
 
-### 1. Backend (e.g. Render)
-
-1. Create a **Web Service** from this repo (or use `render.yaml`).
-2. Build: `npm install && npm run build -w shared && npm run build -w server`
-3. Start: `npm run start -w server`
-4. Set env vars:
-
-| Variable | Value |
-|----------|--------|
-| `MONGODB_URI` | Atlas connection string |
-| `SESSION_SECRET` | Random string ≥ 32 characters |
-| `CLIENT_ORIGIN` | Exact Vercel origin, e.g. `https://your-app.vercel.app` (no trailing slash; comma-separate multiple) |
-| `NODE_ENV` | `production` |
-| `COOKIE_SAMESITE` | `none` (required for cross-site cookies) |
-| `APP_TIMEZONE` | e.g. `Asia/Kolkata` |
-
-5. In Atlas Network Access, allow the host (or `0.0.0.0/0`).
-6. Seed once against that DB from your machine:
-
-```bash
-npm run build -w shared
-npm run seed
-```
-
-Confirm health: `https://your-api.onrender.com/api/health`
-
-### 2. Frontend (Vercel)
-
-1. Import the same repo in [Vercel](https://vercel.com).
-2. **Root Directory** — pick one (both work):
-
-| Root Directory | Install / Build / Output |
-|----------------|---------------------------|
-| **empty** (repo root) | uses root `vercel.json` → output `client/dist` |
-| **`client`** | uses `client/vercel.json` → installs from parent monorepo, output `dist` |
-
-3. Set env var:
-
-| Variable | Value |
-|----------|--------|
-| `VITE_API_URL` | Backend origin, e.g. `https://your-api.onrender.com` (no trailing slash, no `/api`) |
-
-4. Deploy. Open the Vercel URL and sign in with seed accounts (change passwords before real use).
-
-> Cross-site auth needs HTTPS on both sides and `COOKIE_SAMESITE=none`. Hospital production use still requires [docs/PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md).
-
-## Root scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start API and Vite client |
-| `npm run build` | Production build (shared → server → client) |
-| `npm run start` | Start compiled API (`NODE_ENV=production`) |
-| `npm run test` | Unit/API/frontend tests |
-| `npm run test:e2e` | Playwright critical path |
-| `npm run lint` | Lint packages |
-| `npm run typecheck` | TypeScript checks |
-| `npm run seed` | Seed units, users, sample synthetic patient |
-
-## Workspace layout
-
-```
-client/     React UI
-server/     Express API, Mongoose models, seed
-shared/     Zod schemas + hospital option catalogs
-docs/       API reference + production checklist
-```
-
-Important files:
-
-- `shared/src/options.ts` — terminology / combobox suggestions
-- `shared/src/schemas.ts` — shared validation
-- `server/src/models/` — User, Unit, PatientHandover, AuditEvent
-- `server/src/routes/` — auth + patients API
-- `client/src/components/CreatableCombobox.tsx`
-- `client/src/pages/HomePage.tsx`, `PatientFormPage.tsx`
-
-## Security notes (summary)
-
-- bcryptjs password hashing
-- MongoDB-backed sessions, HttpOnly cookies, CSRF protection
-- Helmet, exact-origin CORS, rate limits, small body limits
-- Unit-scoped patient queries for nurses
-- Soft archive (no hard delete from UI)
-- `Cache-Control: no-store` on authenticated responses
-- No tokens in localStorage; no service worker clinical cache
-- Safe logging (no names, MR numbers, clinical values, passwords, cookies)
-
-See [docs/PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md).
-
-## API
-
-See [docs/API.md](docs/API.md).
-
-## Testing
-
-```bash
-npm run test
-npm run test:e2e
-```
-
-E2E boots an in-memory MongoDB API via `server` `e2e:serve` and a Vite preview client. No real patient data is used.
-
-## Privacy footer
-
-The UI includes:
-
-> BedsideRelay records staff-entered handover information. Follow your hospital’s approved clinical and emergency procedures.
+Local development: leave `VITE_API_URL` empty; Vite proxies `/api` → `localhost:4000`.

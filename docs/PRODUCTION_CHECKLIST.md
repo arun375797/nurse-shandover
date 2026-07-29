@@ -13,7 +13,7 @@ This checklist is **not** a compliance certification.
 - [ ] If frontend and API are on different domains: set `COOKIE_SAMESITE=none`, serve both over HTTPS, and set `VITE_API_URL` on the frontend build to the API origin
 - [ ] Restrict MongoDB network access; enable auth on the database
 - [ ] Change or disable all seed accounts; never deploy with default seed passwords
-- [ ] Confirm hospital terminology in `shared/src/options.ts` (especially T/TT tube, urine field label)
+- [ ] Confirm hospital terminology in `frontend/src/shared/options.ts` and `backend/src/shared/options.ts` (especially T/TT tube, urine field label)
 - [ ] Confirm `APP_TIMEZONE` for display
 - [ ] Review session max age and inactivity timeout with hospital policy
 - [ ] Configure reverse proxy / TLS termination and trust proxy settings
